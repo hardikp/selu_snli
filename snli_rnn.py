@@ -200,7 +200,7 @@ def main(config):
     _, tmpfn = tempfile.mkstemp()
     # Save the best model during validation and bail out of training early if we're not improving
     callbacks = [
-        EarlyStopping(patience=PATIENCE),
+        # EarlyStopping(patience=PATIENCE),
         ModelCheckpoint(tmpfn, save_best_only=True, save_weights_only=True),
         History(),
     ]
