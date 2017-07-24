@@ -33,7 +33,7 @@ import numpy as np
 
 import keras
 import keras.backend as K
-from keras.callbacks import EarlyStopping, ModelCheckpoint
+from keras.callbacks import EarlyStopping, ModelCheckpoint, History
 from keras.layers import (Dense, Dropout, Input, TimeDistributed, recurrent)
 from keras.layers.merge import concatenate
 from keras.layers.embeddings import Embedding
@@ -103,7 +103,7 @@ def main(config):
     SENT_HIDDEN_SIZE = 300
     BATCH_SIZE = 512
     PATIENCE = 4  # 8
-    MAX_EPOCHS = 42
+    MAX_EPOCHS = config.max_epochs
     MAX_LEN = 42
     DP = 0.2
     L2 = 4e-6
@@ -201,7 +201,11 @@ def main(config):
     print('Training')
     _, tmpfn = tempfile.mkstemp()
     # Save the best model during validation and bail out of training early if we're not improving
-    callbacks = [EarlyStopping(patience=PATIENCE), ModelCheckpoint(tmpfn, save_best_only=True, save_weights_only=True)]
+    callbacks = [
+        EarlyStopping(patience=PATIENCE),
+        ModelCheckpoint(tmpfn, save_best_only=True, save_weights_only=True),
+        History(),
+    ]
     model.fit(
         [training[0], training[1]],
         training[2],
@@ -220,6 +224,7 @@ def main(config):
 if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--activation', type=str, default='relu', help='Activation function')
+    parser.add_argument('--max_epochs', type=int, default=42, help='Num epochs')
 
     args = parser.parse_args()
     main(args)
