@@ -23,20 +23,18 @@ from __future__ import print_function
 
 import json
 import os
-import re
-import tarfile
+import pickle
 import tempfile
 from argparse import ArgumentParser
-from functools import reduce
 
 import numpy as np
 
 import keras
 import keras.backend as K
-from keras.callbacks import EarlyStopping, ModelCheckpoint, History
-from keras.layers import (Dense, Dropout, Input, TimeDistributed, recurrent)
-from keras.layers.merge import concatenate
+from keras.callbacks import EarlyStopping, History, ModelCheckpoint
+from keras.layers import Dense, Dropout, Input, TimeDistributed, recurrent
 from keras.layers.embeddings import Embedding
+from keras.layers.merge import concatenate
 from keras.layers.normalization import BatchNormalization
 from keras.layers.wrappers import Bidirectional
 from keras.models import Model
@@ -90,10 +88,10 @@ def main(config):
     # Lowest index from the tokenizer is 1 - we need to include 0 in our vocab count
     VOCAB = len(tokenizer.word_counts) + 1
     LABELS = {'contradiction': 0, 'neutral': 1, 'entailment': 2}
-    #RNN = recurrent.LSTM
-    #RNN = lambda *args, **kwargs: Bidirectional(recurrent.LSTM(*args, **kwargs))
-    #RNN = recurrent.GRU
-    #RNN = lambda *args, **kwargs: Bidirectional(recurrent.GRU(*args, **kwargs))
+    # RNN = recurrent.LSTM
+    # RNN = lambda *args, **kwargs: Bidirectional(recurrent.LSTM(*args, **kwargs))
+    # RNN = recurrent.GRU
+    # RNN = lambda *args, **kwargs: Bidirectional(recurrent.GRU(*args, **kwargs))
     # Summation of word embeddings
     RNN = None
     LAYERS = 1
@@ -213,6 +211,9 @@ def main(config):
         epochs=MAX_EPOCHS,
         validation_data=([validation[0], validation[1]], validation[2]),
         callbacks=callbacks)
+
+    # Dump the history as a pickle object
+    pickle.dump(callbacks[-1].history, open('history_{}.pkl'.format(ACTIVATION), 'wb'))
 
     # Restore the best found model during validation
     model.load_weights(tmpfn)
