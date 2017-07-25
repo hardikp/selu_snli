@@ -106,7 +106,7 @@ def main(config):
     DP = 0.2
     L2 = 4e-6
     ACTIVATION = config.activation
-    OPTIMIZER = 'rmsprop'
+    OPTIMIZER = config.optimizer
     print('RNN / Embed / Sent = {}, {}, {}'.format(RNN, EMBED_HIDDEN_SIZE, SENT_HIDDEN_SIZE))
     print('GloVe / Trainable Word Embeddings = {}, {}'.format(USE_GLOVE, TRAIN_EMBED))
 
@@ -234,6 +234,7 @@ if __name__ == '__main__':
     parser.add_argument('--activation', type=str, default='relu', help='Activation function')
     parser.add_argument('--max_epochs', type=int, default=42, help='Num epochs')
     parser.add_argument('--add_batchnorm', type=bool, default=False, help='Enable/disable Batch Normalization')
+    parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')
 
     args = parser.parse_args()
     main(args)
