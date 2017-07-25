@@ -11,3 +11,5 @@ This repo contains a simple Bag of Words model implemented in keras. The code wa
 
 ### SELU vs RELU without BatchNormalization
 <img src="selu_vs_relu_without_batchnorm.png">
+
+A blog post about this experiment is [here](https://hardikp.github.io/2017/07/24/SELU-vs-RELU/).
