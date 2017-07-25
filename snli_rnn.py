@@ -174,20 +174,27 @@ def main(config):
     if RNN and LAYERS > 1:
         for l in range(LAYERS - 1):
             rnn = RNN(return_sequences=True, **rnn_kwargs)
-            prem = BatchNormalization()(rnn(prem))
-            hypo = BatchNormalization()(rnn(hypo))
+            if config.add_bachnorm:
+                prem = BatchNormalization()(rnn(prem))
+                hypo = BatchNormalization()(rnn(hypo))
+
     rnn = SumEmbeddings if not RNN else RNN(return_sequences=False, **rnn_kwargs)
+
     prem = rnn(prem)
     hypo = rnn(hypo)
-    prem = BatchNormalization()(prem)
-    hypo = BatchNormalization()(hypo)
+
+    if config.add_bachnorm:
+        prem = BatchNormalization()(prem)
+        hypo = BatchNormalization()(hypo)
 
     joint = concatenate([prem, hypo])
     joint = Dropout(DP)(joint)
     for i in range(3):
         joint = Dense(2 * SENT_HIDDEN_SIZE, activation=ACTIVATION, kernel_regularizer=l2(L2) if L2 else None)(joint)
         joint = Dropout(DP)(joint)
-        joint = BatchNormalization()(joint)
+
+        if config.add_bachnorm:
+            joint = BatchNormalization()(joint)
 
     pred = Dense(len(LABELS), activation='softmax')(joint)
 
@@ -226,6 +233,7 @@ if __name__ == '__main__':
     parser = ArgumentParser()
     parser.add_argument('--activation', type=str, default='relu', help='Activation function')
     parser.add_argument('--max_epochs', type=int, default=42, help='Num epochs')
+    parser.add_argument('--add_bachnorm', type=bool, default=False, help='Enable/disable Batch Normalization')
 
     args = parser.parse_args()
     main(args)
