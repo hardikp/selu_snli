@@ -33,6 +33,7 @@ import keras
 import keras.backend as K
 from keras.callbacks import EarlyStopping, History, ModelCheckpoint
 from keras.layers import Dense, Dropout, Input, TimeDistributed, recurrent
+from keras.layers.noise import AlphaDropout
 from keras.layers.embeddings import Embedding
 from keras.layers.merge import concatenate
 from keras.layers.normalization import BatchNormalization
@@ -107,6 +108,12 @@ def main(config):
     L2 = 4e-6
     ACTIVATION = config.activation
     OPTIMIZER = config.optimizer
+
+    if config.dropout_type == 'AlphaDropout':
+        DROPOUT = AlphaDropout
+    else:
+        DROPOUT = Dropout
+
     print('RNN / Embed / Sent = {}, {}, {}'.format(RNN, EMBED_HIDDEN_SIZE, SENT_HIDDEN_SIZE))
     print('GloVe / Trainable Word Embeddings = {}, {}'.format(USE_GLOVE, TRAIN_EMBED))
 
@@ -188,10 +195,10 @@ def main(config):
         hypo = BatchNormalization()(hypo)
 
     joint = concatenate([prem, hypo])
-    joint = Dropout(DP)(joint)
+    joint = DROPOUT(DP)(joint)
     for i in range(3):
         joint = Dense(2 * SENT_HIDDEN_SIZE, activation=ACTIVATION, kernel_regularizer=l2(L2) if L2 else None)(joint)
-        joint = Dropout(DP)(joint)
+        joint = DROPOUT(DP)(joint)
 
         if config.add_batchnorm:
             joint = BatchNormalization()(joint)
@@ -235,6 +242,7 @@ if __name__ == '__main__':
     parser.add_argument('--max_epochs', type=int, default=42, help='Num epochs')
     parser.add_argument('--add_batchnorm', type=bool, default=False, help='Enable/disable Batch Normalization')
     parser.add_argument('--optimizer', type=str, default='adam', help='Optimizer')
+    parser.add_argument('--dropout_type', type=str, default='dropout', help='Dropout Type')
 
     args = parser.parse_args()
     main(args)
